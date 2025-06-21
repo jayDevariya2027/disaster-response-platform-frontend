@@ -1,12 +1,21 @@
-import { useState } from 'react'
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import DisasterDetail from "./pages/DisasterDetail";
+import Navbar from "./components/Navbar";
 
 function App() {
-
   return (
-    <>
-      hello
-    </>
-  )
+    <Router>
+      <Navbar />
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/disaster/:id" element={<DisasterDetail />} />
+        </Routes>
+      </div>
+    </Router>
+  );
 }
 
-export default App
+export default App;

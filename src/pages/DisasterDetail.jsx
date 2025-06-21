@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import api from "../config/api";
 import ImageVerifier from "../components/ImageVerifier";
+import ResourceList from "../components/ResourceList";
 
 export default function DisasterDetail() {
     const { id } = useParams();
@@ -37,6 +38,8 @@ export default function DisasterDetail() {
                     </li>
                 ))}
             </ul>
+
+            <ResourceList disasterId={id} geometry={disaster?.location}/>
 
             <ImageVerifier disasterId={id} />
         </div>

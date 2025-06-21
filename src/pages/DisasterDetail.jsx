@@ -12,6 +12,15 @@ export default function DisasterDetail() {
     const [reports, setReports] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showReports, setShowReports] = useState(false);
+    const [showResourceForm, setShowResourceForm] = useState(false);
+    const [resourceForm, setResourceForm] = useState({
+        name: "",
+        location_name: "",
+        type: "medical"
+    });
+    const [locationError, setLocationError] = useState("");
+    const [formError, setFormError] = useState("");
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -48,6 +57,57 @@ export default function DisasterDetail() {
         setShowReports(!showReports);
     };
 
+
+    const handleResourceInputChange = (e) => {
+        const { name, value } = e.target;
+        setResourceForm(prev => ({
+            ...prev,
+            [name]: value
+        }));
+
+        if (name === 'location_name') {
+            validateLocationFormat(value);
+        }
+    };
+
+    const validateLocationFormat = (location) => {
+        // Check if location follows area, city, country format
+        const parts = location.split(',').map(part => part.trim());
+        if (parts.length < 2) {
+            setLocationError("Please enter location in 'area, city, country' format");
+            return false;
+        }
+        setLocationError("");
+        return true;
+    };
+
+    const handleResourceSubmit = async (e) => {
+        e.preventDefault();
+        setFormError("");
+
+        if (!validateLocationFormat(resourceForm.location_name)) {
+            return;
+        }
+
+        try {
+            const response = await api.post(`/resources`, {
+                disaster_id: id,
+                ...resourceForm
+            });
+
+            console.log("Resource created:", response.data);
+            setShowResourceForm(false);
+            setResourceForm({
+                name: "",
+                location_name: "",
+                type: "medical"
+            });
+        } catch (err) {
+            console.error("Error creating resource:", err);
+            setFormError("Failed to create resource. Please try again.");
+        }
+    };
+
     if (isLoading) return <p className="p-4">Loading disaster details...</p>;
     if (!disaster) return <p className="p-4">Disaster not found</p>;
 
@@ -61,8 +121,8 @@ export default function DisasterDetail() {
                 <button
                     onClick={toggleReports}
                     className={`px-4 py-2 rounded-md font-medium ${showReports
-                            ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                        ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
                         }`}
                 >
                     {showReports ? 'Hide Reports' : 'View Reports'}
@@ -146,6 +206,84 @@ export default function DisasterDetail() {
                             <li key={i}>{post.post}</li>
                         ))}
                     </ul>
+                )}
+            </div>
+
+
+            <div className="mb-8">
+                <button
+                    onClick={() => setShowResourceForm(!showResourceForm)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-4"
+                >
+                    {showResourceForm ? 'Cancel' : 'Add New Resource'}
+                </button>
+
+                {showResourceForm && (
+                    <form onSubmit={handleResourceSubmit} className="bg-gray-50 p-4 rounded-lg border">
+                        <h3 className="text-lg font-semibold mb-3">Add Resource</h3>
+
+                        <div className="mb-3">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Resource Name
+                            </label>
+                            <input
+                                type="text"
+                                name="name"
+                                value={resourceForm.name}
+                                onChange={handleResourceInputChange}
+                                className="w-full border px-3 py-2 rounded"
+                                required
+                            />
+                        </div>
+
+                        <div className="mb-3">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Location (Area, City, Country)
+                            </label>
+                            <input
+                                type="text"
+                                name="location_name"
+                                value={resourceForm.location_name}
+                                onChange={handleResourceInputChange}
+                                className="w-full border px-3 py-2 rounded"
+                                placeholder="e.g. Central Park, New York, USA"
+                                required
+                            />
+                            {locationError && (
+                                <p className="text-red-500 text-sm mt-1">{locationError}</p>
+                            )}
+                        </div>
+
+                        <div className="mb-3">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Resource Type
+                            </label>
+                            <select
+                                name="type"
+                                value={resourceForm.type}
+                                onChange={handleResourceInputChange}
+                                className="w-full border px-3 py-2 rounded"
+                                required
+                            >
+                                <option value="medical">Medical</option>
+                                <option value="shelter">Shelter</option>
+                                <option value="food">Food</option>
+                                <option value="volunteer">Volunteer Center</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                        >
+                            Submit Resource
+                        </button>
+
+                        {formError && (
+                            <p className="text-red-500 text-sm mt-2">{formError}</p>
+                        )}
+                    </form>
                 )}
             </div>
 

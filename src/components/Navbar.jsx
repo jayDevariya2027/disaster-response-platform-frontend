@@ -8,6 +8,9 @@ export default function Navbar() {
         Disaster Response System
       </Link>
       <div className="space-x-4">
+        <Link to="/updates" className="hover:underline">
+          Official Updates
+        </Link>
         <Link to="/disaster/create" className="hover:underline">
           Create Disaster
         </Link>

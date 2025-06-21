@@ -3,47 +3,61 @@ import React, { useEffect, useState } from "react";
 import api from "../config/api";
 import ImageVerifier from "../components/ImageVerifier";
 import ResourceList from "../components/ResourceList";
+import { Link } from "react-router-dom";
 
 export default function DisasterDetail() {
     const { id } = useParams();
     const [disaster, setDisaster] = useState(null);
     const [socialMedia, setSocialMedia] = useState([]);
-    const [updates, setUpdates] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        api.get(`/disasters/${id}`).then(res => setDisaster(res.data)).catch(console.error);
-        api.get(`/social/disaster/${id}/social-media`).then(res => setSocialMedia(res.data.posts)).catch(console.error);
-        api.get(`/updates/official-updates`).then(res => setUpdates(res.data.updates)).catch(console.error);
+        const fetchData = async () => {
+            try {
+                const [disasterRes, socialRes] = await Promise.all([
+                    api.get(`/disasters/${id}`),
+                    api.get(`/social/disaster/${id}/social-media`)
+                ]);
+                setDisaster(disasterRes.data);
+                setSocialMedia(socialRes.data.posts);
+            } catch (err) {
+                console.error("Error fetching data:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
     }, [id]);
 
-    if (!disaster) return <p>Loading disaster...</p>;
+    if (isLoading) return <p className="p-4">Loading disaster details...</p>;
+    if (!disaster) return <p className="p-4">Disaster not found</p>;
 
     return (
-        <div>
+        <div className="p-4 max-w-4xl mx-auto">
             <h2 className="text-2xl font-bold mb-2">{disaster.title}</h2>
-            <p className="text-gray-600 mb-4">{disaster.description}</p>
+            <p className="text-gray-600 mb-6">{disaster.description}</p>
 
-            <h3 className="text-xl font-semibold mb-2">Social Media Posts</h3>
-            {socialMedia.length === 0 ? (
-                <p className="text-gray-500 mb-4">No posts found related to this disaster</p>
-            ) : (
-                <ul className="list-disc ml-6 mb-4">
-                    {socialMedia.map((p, i) => (
-                        <li key={i}>{p.post}</li>
-                    ))}
-                </ul>
-            )}
-
-            <h3 className="text-xl font-semibold mb-2">Official Updates</h3>
-            <ul className="list-disc ml-6 mb-4">
-                {updates.map((u, i) => (
-                    <li key={i}>
-                        <a className="text-blue-600 underline" href={u.link} target="_blank" rel="noopener noreferrer">
-                            {u.title}
-                        </a>
-                    </li>
-                ))}
-            </ul>
+            <div className="mb-8">
+                <h3 className="text-xl font-semibold mb-3 flex items-center">
+                    Social Media Posts
+                    <Link
+                        to="/updates"
+                        className="ml-4 text-sm text-blue-600 hover:underline"
+                    >
+                        (View Official Updates)
+                    </Link>
+                </h3>
+                {socialMedia.length === 0 ? (
+                    <p className="text-gray-500">No posts found related to this disaster</p>
+                ) : (
+                    <ul className="list-disc pl-6 space-y-2">
+                        {socialMedia.map((post, i) => (
+                            <li key={i}>{post.post}</li>
+                        ))}
+                    </ul>
+                )}
+            </div>
 
             <ResourceList disasterId={id} geometry={disaster?.location} />
             <ImageVerifier disasterId={id} />

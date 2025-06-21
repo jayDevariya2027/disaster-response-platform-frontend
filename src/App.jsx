@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import DisasterDetail from "./pages/DisasterDetail";
 import Navbar from "./components/Navbar";
 import CreateDisaster from "./pages/CreateDisaster";
+import Updates from "./pages/Updates";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/disaster/create" element={<CreateDisaster />} />
           <Route path="/disaster/:id" element={<DisasterDetail />} />
+          <Route path="/updates" element={<Updates />} />
         </Routes>
       </div>
     </Router>

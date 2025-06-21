@@ -24,23 +24,28 @@ export default function DisasterDetail() {
             <p className="text-gray-600 mb-4">{disaster.description}</p>
 
             <h3 className="text-xl font-semibold mb-2">Social Media Posts</h3>
-            <ul className="list-disc ml-6 mb-4">
-                {socialMedia.map((p, i) => (
-                    <li key={i}>{p.post}</li>
-                ))}
-            </ul>
+            {socialMedia.length === 0 ? (
+                <p className="text-gray-500 mb-4">No posts found related to this disaster</p>
+            ) : (
+                <ul className="list-disc ml-6 mb-4">
+                    {socialMedia.map((p, i) => (
+                        <li key={i}>{p.post}</li>
+                    ))}
+                </ul>
+            )}
 
             <h3 className="text-xl font-semibold mb-2">Official Updates</h3>
             <ul className="list-disc ml-6 mb-4">
                 {updates.map((u, i) => (
                     <li key={i}>
-                        <a className="text-blue-600 underline" href={u.link} target="_blank">{u.title}</a>
+                        <a className="text-blue-600 underline" href={u.link} target="_blank" rel="noopener noreferrer">
+                            {u.title}
+                        </a>
                     </li>
                 ))}
             </ul>
 
-            <ResourceList disasterId={id} geometry={disaster?.location}/>
-
+            <ResourceList disasterId={id} geometry={disaster?.location} />
             <ImageVerifier disasterId={id} />
         </div>
     );
